@@ -37,15 +37,20 @@ function buildFeatureVector(transaction) {
 async function runModelInference(featureVector) {
   const { modelVersion, timeoutMs } = fraudModelConfig;
 
+  let timeoutHandle;
+
   const inferencePromise = new Promise((resolve) => {
-    // Simulate async model call – replace with actual model SDK invocation.
-    // The resolved value is a fraud probability score between 0 and 1.
-    const mockScore = featureVector.reduce((acc, v) => acc + v, 0) % 1;
-    resolve(mockScore);
+    // Use setImmediate so the inference runs asynchronously and the timeout
+    // guard can fire if the model call (replaced with actual SDK) blocks.
+    setImmediate(() => {
+      // Replace the line below with the actual model SDK invocation.
+      const mockScore = featureVector.reduce((acc, v) => acc + v, 0) % 1;
+      resolve(mockScore);
+    });
   });
 
   const timeoutPromise = new Promise((_, reject) => {
-    setTimeout(
+    timeoutHandle = setTimeout(
       () =>
         reject(
           new Error(
@@ -56,7 +61,12 @@ async function runModelInference(featureVector) {
     );
   });
 
-  return Promise.race([inferencePromise, timeoutPromise]);
+  try {
+    const score = await Promise.race([inferencePromise, timeoutPromise]);
+    return score;
+  } finally {
+    clearTimeout(timeoutHandle);
+  }
 }
 
 /**
