@@ -1,0 +1,10 @@
+{
+  "name": "sentinel-test-repo",
+  "version": "1.0.0",
+  "description": "Fraud scoring service",
+  "main": "src/scoringService.js",
+  "scripts": {
+    "test": "node --test src/scoringService.test.js"
+  },
+  "license": "MIT"
+}
